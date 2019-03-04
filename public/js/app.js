@@ -1,0 +1,1 @@
+console.log('client file javascript file is loaded');
