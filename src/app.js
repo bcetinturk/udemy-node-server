@@ -2,6 +2,9 @@ const path = require('path');
 const express = require('express');
 const hbs = require('hbs');
 
+const geocode = require('./utils/geocode');
+const forecast = require('./utils/forecast');
+
 const app = express();
 
 //Define paths for express config
@@ -46,6 +49,31 @@ app.get('/help/*', (req, res)=>{
         message: "Help article not found",
         name: 'Baris Cetinturk'
     });
+});
+
+app.get('/weather', (req, res)=>{
+    if(!req.query.address){
+        return res.send({
+            error: 'You must provide an address'
+        });
+    }
+
+    geocode(req.query.address, (errorMsg, {lat, lon, name, country}={})=>{
+        if(errorMsg){
+            return res.send(errorMsg);
+        }
+        forecast(lat, lon, (errorMsg, {temperature, summary, humidity}={})=>{
+            //TODO: add other values to resultObj
+            if(errorMsg){
+                return res.send(errorMsg);
+            }
+            res.send({name, country, temperature, summary, humidity});
+
+        })
+
+    });
+
+
 });
 
 app.get('*', (req, res)=>{
